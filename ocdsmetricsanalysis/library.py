@@ -1,4 +1,5 @@
 import sqlite3
+from collections import defaultdict
 
 
 class Store:
@@ -87,9 +88,30 @@ class ObservationList:
             out.append(Observation(self.metric, result))
         return out
 
+    def get_data_by_dimension(self, dimension_key: str):
+        out = defaultdict(list)
+        for observation in self.get_data():
+            dimensions: dict = observation.get_dimensions()
+            if dimensions.get(dimension_key):
+                out[dimensions.get(dimension_key)].append(observation)
+        return out
+
 
 class Observation:
     def __init__(self, metric: Metric, observation_row_data):
         self.metric: Metric = metric
         self.store: Store = metric.store
         self.observation_row_data = observation_row_data
+
+    def get_dimensions(self):
+        cur = self.store.database_connection.cursor()
+
+        cur.execute(
+            "SELECT dimension.key, dimension.value FROM dimension WHERE metric_id=? AND observation_id=?",
+            (self.metric.metric_id, self.observation_row_data["id"]),
+        )
+
+        out = {}
+        for result in cur.fetchall():
+            out[result["key"]] = result["value"]
+        return out
