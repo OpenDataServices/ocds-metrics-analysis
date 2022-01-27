@@ -1,0 +1,33 @@
+{
+    "id": "HATS",
+    "title": "How much do you like wearing hats? We ran a survey of a small group of people and here are their answers!",
+    "observations": [
+        {
+            "id": 1,
+            "dimensions": {
+                "answer": "Hate"
+            },
+            "value": {
+                "amount": 46
+            }
+        },
+        {
+            "id": 2,
+            "dimensions": {
+                "answer": "Neither hate or like"
+            },
+            "value": {
+                "amount": 48
+            }
+        },
+        {
+            "id": 3,
+            "dimensions": {
+                "answer": "Like"
+            },
+            "value": {
+                "amount": 15
+            }
+        }
+    ]
+}

@@ -79,7 +79,11 @@ class ObservationList:
 
         where: list = ["observation.metric_id = :metric_id"]
 
-        sql: str = "SELECT observation.* FROM observation WHERE " + " AND ".join(where)
+        sql: str = (
+            "SELECT observation.* FROM observation WHERE "
+            + " AND ".join(where)
+            + " ORDER BY id ASC"
+        )
 
         cur.execute(sql, params)
 
@@ -115,3 +119,6 @@ class Observation:
         for result in cur.fetchall():
             out[result["key"]] = result["value"]
         return out
+
+    def get_value_amount(self):
+        return self.observation_row_data["value_amount"]
