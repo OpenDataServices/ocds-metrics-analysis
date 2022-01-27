@@ -50,6 +50,43 @@ def test_observation_list_get_data(store):
     assert "short" == observations[5].get_dimensions()["height"]
 
 
+def test_observation_list_filter_by_dimension_then_get_data(store):
+    metric = store.get_metric("HATS")
+    observation_list = metric.get_observation_list()
+    observation_list.filter_by_dimension("height", "tall")
+    observations = observation_list.get_data()
+
+    assert 3 == len(observations)
+
+    assert "46" == observations[0].get_value_amount()
+    assert "Hate" == observations[0].get_dimensions()["answer"]
+    assert "tall" == observations[0].get_dimensions()["height"]
+
+    assert "48" == observations[1].get_value_amount()
+    assert "Neither hate or like" == observations[1].get_dimensions()["answer"]
+    assert "tall" == observations[1].get_dimensions()["height"]
+
+    assert "15" == observations[2].get_value_amount()
+    assert "Like" == observations[2].get_dimensions()["answer"]
+    assert "tall" == observations[2].get_dimensions()["height"]
+
+
+def test_observation_list_filter_by_dimension_twice_then_get_data(store):
+    """Filter_by_dimension twice on 2 different dimensions then get data.
+    Makes sure you can apply more than one filter with no problems."""
+    metric = store.get_metric("HATS")
+    observation_list = metric.get_observation_list()
+    observation_list.filter_by_dimension("answer", "Hate")
+    observation_list.filter_by_dimension("height", "tall")
+    observations = observation_list.get_data()
+
+    assert 1 == len(observations)
+
+    assert "46" == observations[0].get_value_amount()
+    assert "Hate" == observations[0].get_dimensions()["answer"]
+    assert "tall" == observations[0].get_dimensions()["height"]
+
+
 def test_observation_list_get_data_by_dimension(store):
     metric = store.get_metric("HATS")
     observation_list = metric.get_observation_list()
