@@ -1,0 +1,66 @@
+{
+    "id": "HATS",
+    "title": "How much do you like wearing hats? We ran a survey of a small group of people and here are their answers, divided by height!",
+    "observations": [
+        {
+            "id": 1,
+            "dimensions": {
+                "answer": "Hate",
+                "height": "tall"
+            },
+            "value": {
+                "amount": 46
+            }
+        },
+        {
+            "id": 2,
+            "dimensions": {
+                "answer": "Neither hate or like",
+                "height": "tall"
+            },
+            "value": {
+                "amount": 48
+            }
+        },
+        {
+            "id": 3,
+            "dimensions": {
+                "answer": "Like",
+                "height": "tall"
+            },
+            "value": {
+                "amount": 15
+            }
+        },
+        {
+            "id": 4,
+            "dimensions": {
+                "answer": "Hate",
+                "height": "short"
+            },
+            "value": {
+                "amount": 36
+            }
+        },
+        {
+            "id": 5,
+            "dimensions": {
+                "answer": "Neither hate or like",
+                "height": "short"
+            },
+            "value": {
+                "amount": 45
+            }
+        },
+        {
+            "id": 6,
+            "dimensions": {
+                "answer": "Like",
+                "height": "short"
+            },
+            "value": {
+                "amount": 31
+            }
+        }
+    ]
+}
