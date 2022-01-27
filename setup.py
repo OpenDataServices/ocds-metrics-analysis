@@ -7,6 +7,7 @@ setup(
     author_email="code@opendataservices.coop",
     url="https://github.com/OpenDataServices/ocds-metrics-analysis",
     project_urls={
+        "Documentation": "https://ocds-metrics-analysis.readthedocs.io/en/latest/",
         "Issues": "https://github.com/OpenDataServices/ocds-metrics-analysis/issues",
         "Source": "https://github.com/OpenDataServices/ocds-metrics-analysis",
     },
