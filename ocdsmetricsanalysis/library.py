@@ -84,8 +84,8 @@ class Metric:
             "SELECT metric.* FROM metric WHERE id=?",
             [metric_id],
         )
-        row = cur.fetchone()
-        if row is None:
+        self.metric_row = cur.fetchone()
+        if self.metric_row is None:
             raise MetricNotFoundException("No such metric found")
 
     def get_observation_list(self):
@@ -184,6 +184,29 @@ class Metric:
                 dimensions=observation["dimensions"],
             )
 
+    def get_json(self):
+        out = {
+            "id": self.metric_row["id"],
+            "title": self.metric_row["title"],
+            "description": self.metric_row["description"],
+            "observations": [],
+        }
+
+        observation_list = self.get_observation_list()
+        for observation in observation_list.get_data():
+            out["observations"].append(
+                {
+                    "id": observation.get_id(),
+                    "value": {
+                        "amount": observation.get_value_amount(),
+                        "currency": observation.get_value_currency(),
+                    },
+                    "dimensions": observation.get_dimensions(),
+                }
+            )
+
+        return out
+
 
 class ObservationList:
     def __init__(self, metric: Metric):
@@ -267,5 +290,11 @@ class Observation:
             out[result["key"]] = result["value"]
         return out
 
-    def get_value_amount(self):
+    def get_value_amount(self) -> str:
         return self.observation_row_data["value_amount"]
+
+    def get_value_currency(self) -> str:
+        return self.observation_row_data["value_currency"]
+
+    def get_id(self) -> str:
+        return self.observation_row_data["id"]

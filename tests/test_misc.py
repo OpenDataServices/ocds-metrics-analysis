@@ -18,6 +18,27 @@ def test_add_metric(store):
     # Test is just works with no crash
 
 
+def test_metric_get_json(store):
+    store.add_metric("HATS", "Hats", "How many hats?")
+    metric = store.get_metric("HATS")
+    metric.add_observation(
+        "H1", value_amount="100", value_currency="GBP", dimensions={"colour": "red"}
+    )
+
+    assert {
+        "description": "How many hats?",
+        "id": "HATS",
+        "observations": [
+            {
+                "dimensions": {"colour": "red"},
+                "id": "H1",
+                "value": {"amount": "100", "currency": "GBP"},
+            }
+        ],
+        "title": "Hats",
+    } == metric.get_json()
+
+
 def test_get_metric_that_does_not_exist(store):
     with pytest.raises(MetricNotFoundException):
         store.get_metric("HATS")
