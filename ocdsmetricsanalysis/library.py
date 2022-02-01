@@ -1,5 +1,6 @@
 import sqlite3
 from collections import defaultdict
+from typing import Optional, Union
 
 from ocdsmetricsanalysis.exceptions import MetricNotFoundException
 
@@ -88,6 +89,64 @@ class Metric:
 
     def get_observation_list(self):
         return ObservationList(self)
+
+    def add_observation(
+        self,
+        id: str,
+        value_amount: Optional[str] = None,
+        value_currency: Optional[str] = None,
+        dimensions: dict = {},
+    ):
+        # TODO check for id clash
+        cur = self.store.database_connection.cursor()
+        cur.execute(
+            "INSERT INTO observation (metric_id, id, value_amount, value_currency) VALUES (?, ?, ?, ?)",
+            (
+                self.metric_id,
+                id,
+                value_amount,
+                value_currency,
+            ),
+        )
+        for dimension_key, dimension_value in dimensions.items():
+            cur.execute(
+                "INSERT INTO dimension (metric_id, observation_id, key, value) VALUES (?, ?, ?, ?)",
+                (
+                    self.metric_id,
+                    id,
+                    dimension_key,
+                    dimension_value,
+                ),
+            )
+        self.store.database_connection.commit()
+
+    def add_aggregate_observations(
+        self,
+        data_rows: list,
+        idx_to_aggregate: Union[str, int],
+        answer_dimension_key: str,
+    ):
+
+        possible_answers = sorted(list(set([d[idx_to_aggregate] for d in data_rows])))
+
+        observations = [
+            {"answer_value": a, "count": 0, "dimensions": {answer_dimension_key: a}}
+            for a in possible_answers
+        ]
+
+        for data_row in data_rows:
+            for observation in observations:
+                if observation["answer_value"] == data_row[idx_to_aggregate]:
+                    observation["count"] += 1
+
+        id = 0
+        for observation in observations:
+            id += 1
+            self.add_observation(
+                str(id),
+                value_amount=observation["count"],
+                dimensions=observation["dimensions"],
+            )
 
 
 class ObservationList:
