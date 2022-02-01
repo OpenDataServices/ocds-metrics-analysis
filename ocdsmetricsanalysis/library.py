@@ -1,6 +1,8 @@
 import sqlite3
 from collections import defaultdict
 
+from ocdsmetricsanalysis.exceptions import MetricNotFoundException
+
 
 class Store:
     def __init__(self, database_filename):
@@ -15,6 +17,19 @@ class Store:
         )
         cur.execute(
             "CREATE TABLE dimension(metric_id TEXT, observation_id TEXT, key TEXT, value TEXT, PRIMARY KEY(metric_id, observation_id, key))"
+        )
+        self.database_connection.commit()
+
+    def add_metric(self, id: str, title: str, description: str):
+        # TODO check for id clash
+        cur = self.database_connection.cursor()
+        cur.execute(
+            "INSERT INTO metric (id, title, description) VALUES (?, ?, ?)",
+            (
+                id,
+                title,
+                description,
+            ),
         )
         self.database_connection.commit()
 
@@ -61,7 +76,15 @@ class Metric:
     def __init__(self, store: Store, metric_id: str):
         self.store = store
         self.metric_id = metric_id
-        # TODO error if metric does not exist
+
+        cur = self.store.database_connection.cursor()
+        cur.execute(
+            "SELECT metric.* FROM metric WHERE id=?",
+            [metric_id],
+        )
+        row = cur.fetchone()
+        if row is None:
+            raise MetricNotFoundException("No such metric found")
 
     def get_observation_list(self):
         return ObservationList(self)
