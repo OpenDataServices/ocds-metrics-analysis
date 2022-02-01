@@ -7,27 +7,21 @@
             "dimensions": {
                 "answer": "Hate"
             },
-            "value": {
-                "amount": 46
-            }
+            "measure": 46
         },
         {
             "id": 2,
             "dimensions": {
                 "answer": "Neither hate or like"
             },
-            "value": {
-                "amount": 48
-            }
+            "measure": 48
         },
         {
             "id": 3,
             "dimensions": {
                 "answer": "Like"
             },
-            "value": {
-                "amount": 15
-            }
+            "measure": 15
         }
     ]
 }

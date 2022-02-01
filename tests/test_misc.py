@@ -18,7 +18,7 @@ def test_add_metric(store):
     # Test is just works with no crash
 
 
-def test_metric_get_json(store):
+def test_metric_get_json_with_value(store):
     store.add_metric("HATS", "Hats", "How many hats?")
     metric = store.get_metric("HATS")
     metric.add_observation(
@@ -34,6 +34,21 @@ def test_metric_get_json(store):
                 "id": "H1",
                 "value": {"amount": "100", "currency": "GBP"},
             }
+        ],
+        "title": "Hats",
+    } == metric.get_json()
+
+
+def test_metric_get_json_with_measure(store):
+    store.add_metric("HATS", "Hats", "How many hats?")
+    metric = store.get_metric("HATS")
+    metric.add_observation("H1", measure="500", dimensions={"colour": "red"})
+
+    assert {
+        "description": "How many hats?",
+        "id": "HATS",
+        "observations": [
+            {"dimensions": {"colour": "red"}, "id": "H1", "measure": "500"}
         ],
         "title": "Hats",
     } == metric.get_json()

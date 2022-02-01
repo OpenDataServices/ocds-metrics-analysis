@@ -15,7 +15,7 @@ class Store:
             "CREATE TABLE metric(id TEXT, title TEXT, description TEXT, PRIMARY KEY(id))"
         )
         cur.execute(
-            "CREATE TABLE observation(metric_id TEXT, id TEXT, value_amount TEXT, value_currency TEXT, PRIMARY KEY(metric_id, id))"
+            "CREATE TABLE observation(metric_id TEXT, id TEXT, value_amount TEXT, value_currency TEXT, measure TEXT, PRIMARY KEY(metric_id, id))"
         )
         cur.execute(
             "CREATE TABLE dimension(metric_id TEXT, observation_id TEXT, key TEXT, value TEXT, PRIMARY KEY(metric_id, observation_id, key))"
@@ -48,12 +48,13 @@ class Store:
         )
         for observation in data["observations"]:
             cur.execute(
-                "INSERT INTO observation (metric_id, id, value_amount, value_currency) VALUES (?, ?, ?, ?)",
+                "INSERT INTO observation (metric_id, id, value_amount, value_currency, measure) VALUES (?, ?, ?, ?, ?)",
                 (
                     data.get("id"),
                     observation.get("id"),
                     observation.get("value", {}).get("amount"),
                     observation.get("value", {}).get("currency"),
+                    observation.get("measure"),
                 ),
             )
             for dimension_key, dimension_value in observation.get(
@@ -96,18 +97,14 @@ class Metric:
         id: str,
         value_amount: Optional[str] = None,
         value_currency: Optional[str] = None,
+        measure: Optional[str] = None,
         dimensions: dict = {},
     ):
         # TODO check for id clash
         cur = self.store.database_connection.cursor()
         cur.execute(
-            "INSERT INTO observation (metric_id, id, value_amount, value_currency) VALUES (?, ?, ?, ?)",
-            (
-                self.metric_id,
-                id,
-                value_amount,
-                value_currency,
-            ),
+            "INSERT INTO observation (metric_id, id, value_amount, value_currency, measure) VALUES (?, ?, ?, ?, ?)",
+            (self.metric_id, id, value_amount, value_currency, measure),
         )
         for dimension_key, dimension_value in dimensions.items():
             cur.execute(
@@ -180,7 +177,7 @@ class Metric:
             id += 1
             self.add_observation(
                 "%09d" % (id),
-                value_amount=observation["count"],
+                measure=observation["count"],
                 dimensions=observation["dimensions"],
             )
 
@@ -194,16 +191,18 @@ class Metric:
 
         observation_list = self.get_observation_list()
         for observation in observation_list.get_data():
-            out["observations"].append(
-                {
-                    "id": observation.get_id(),
-                    "value": {
-                        "amount": observation.get_value_amount(),
-                        "currency": observation.get_value_currency(),
-                    },
-                    "dimensions": observation.get_dimensions(),
+            observation_data = {
+                "id": observation.get_id(),
+                "dimensions": observation.get_dimensions(),
+            }
+            if observation.has_value():
+                observation_data["value"] = {
+                    "amount": observation.get_value_amount(),
+                    "currency": observation.get_value_currency(),
                 }
-            )
+            if observation.has_measure():
+                observation_data["measure"] = observation.get_measure()
+            out["observations"].append(observation_data)
 
         return out
 
@@ -290,11 +289,23 @@ class Observation:
             out[result["key"]] = result["value"]
         return out
 
+    def has_value(self) -> bool:
+        return (
+            self.observation_row_data["value_amount"]
+            or self.observation_row_data["value_currency"]
+        )
+
     def get_value_amount(self) -> str:
         return self.observation_row_data["value_amount"]
 
     def get_value_currency(self) -> str:
         return self.observation_row_data["value_currency"]
+
+    def has_measure(self) -> bool:
+        return bool(self.observation_row_data["measure"])
+
+    def get_measure(self) -> str:
+        return self.observation_row_data["measure"]
 
     def get_id(self) -> str:
         return self.observation_row_data["id"]

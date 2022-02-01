@@ -31,10 +31,10 @@ def test_no_dimensions(store):
 
     assert 2 == len(observations)
 
-    assert "2" == observations[0].get_value_amount()
+    assert "2" == observations[0].get_measure()
     assert "no" == observations[0].get_dimensions()["answer"]
 
-    assert "3" == observations[1].get_value_amount()
+    assert "3" == observations[1].get_measure()
     assert "yes" == observations[1].get_dimensions()["answer"]
 
 
@@ -70,7 +70,7 @@ def test_one_dimension(store):
     for expected_answer in expected_answers:
         observation = observations.pop(0)
         assert (
-            expected_answer[0] == observation.get_value_amount()
+            expected_answer[0] == observation.get_measure()
         ), "EXPECTED ANSWER = " + str(expected_answer)
         assert (
             expected_answer[1] == observation.get_dimensions()["answer"]
@@ -127,7 +127,7 @@ def test_two_dimensions(store):
     for expected_answer in expected_answers:
         observation = observations.pop(0)
         assert (
-            expected_answer[0] == observation.get_value_amount()
+            expected_answer[0] == observation.get_measure()
         ), "EXPECTED ANSWER = " + str(expected_answer)
         assert (
             expected_answer[1] == observation.get_dimensions()["answer"]

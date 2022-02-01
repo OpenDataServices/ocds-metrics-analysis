@@ -25,13 +25,13 @@ def test_observation_list_get_data(store):
 
     assert 3 == len(observations)
 
-    assert "46" == observations[0].get_value_amount()
+    assert "46" == observations[0].get_measure()
     assert "Hate" == observations[0].get_dimensions()["answer"]
 
-    assert "48" == observations[1].get_value_amount()
+    assert "48" == observations[1].get_measure()
     assert "Neither hate or like" == observations[1].get_dimensions()["answer"]
 
-    assert "15" == observations[2].get_value_amount()
+    assert "15" == observations[2].get_measure()
     assert "Like" == observations[2].get_dimensions()["answer"]
 
 
@@ -43,12 +43,10 @@ def test_observation_list_get_data_by_dimension(store):
     assert 3 == len(observations_by_dimension.keys())
 
     assert 1 == len(observations_by_dimension["Hate"])
-    assert "46" == observations_by_dimension["Hate"][0].get_value_amount()
+    assert "46" == observations_by_dimension["Hate"][0].get_measure()
 
     assert 1 == len(observations_by_dimension["Neither hate or like"])
-    assert (
-        "48" == observations_by_dimension["Neither hate or like"][0].get_value_amount()
-    )
+    assert "48" == observations_by_dimension["Neither hate or like"][0].get_measure()
 
     assert 1 == len(observations_by_dimension["Like"])
-    assert "15" == observations_by_dimension["Like"][0].get_value_amount()
+    assert "15" == observations_by_dimension["Like"][0].get_measure()
