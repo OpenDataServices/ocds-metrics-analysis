@@ -1,3 +1,4 @@
+import copy
 import sqlite3
 from collections import defaultdict
 from typing import Optional, Union
@@ -125,25 +126,60 @@ class Metric:
         data_rows: list,
         idx_to_aggregate: Union[str, int],
         answer_dimension_key: str,
+        idx_to_dimensions: dict = {},
     ):
 
-        possible_answers = sorted(list(set([d[idx_to_aggregate] for d in data_rows])))
+        # ------------------------------- Get list of Observations
+        # First, just the observations for possible answers
+        possible_answers = sorted(
+            list(set([d[idx_to_aggregate] for d in data_rows if d[idx_to_aggregate]]))
+        )
 
         observations = [
-            {"answer_value": a, "count": 0, "dimensions": {answer_dimension_key: a}}
+            {
+                "answer_value": a,
+                "count": 0,
+                "extra_dimension_definitions": {},
+                "dimensions": {answer_dimension_key: a},
+            }
             for a in possible_answers
         ]
 
+        # Second, for every extra dimension add more observations
+        for idx, dimension in idx_to_dimensions.items():
+            possible_answers = sorted(list(set([d[idx] for d in data_rows if d[idx]])))
+            new_observations = []
+            for observation in observations:
+                for a in possible_answers:
+                    new_observation = copy.deepcopy(observation)
+                    new_observation["dimensions"][dimension["dimension_name"]] = a
+                    new_observation["extra_dimension_definitions"][idx] = dimension
+                    new_observations.append(new_observation)
+            observations.extend(new_observations)
+
+        # ------------------------------- Process Data
         for data_row in data_rows:
             for observation in observations:
+                # For every data row and every observation see if it matches - if so, increase count
                 if observation["answer_value"] == data_row[idx_to_aggregate]:
-                    observation["count"] += 1
+                    increase_count = True
+                    for d_idx, dimension in observation[
+                        "extra_dimension_definitions"
+                    ].items():
+                        if (
+                            data_row[d_idx]
+                            != observation["dimensions"][dimension["dimension_name"]]
+                        ):
+                            increase_count = False
+                    if increase_count:
+                        observation["count"] += 1
 
+        # ------------------------------- Save data to disk
         id = 0
         for observation in observations:
             id += 1
             self.add_observation(
-                str(id),
+                "%09d" % (id),
                 value_amount=observation["count"],
                 dimensions=observation["dimensions"],
             )
