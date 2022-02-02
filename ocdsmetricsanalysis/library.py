@@ -74,6 +74,14 @@ class Store:
     def get_metric(self, metric_id):
         return Metric(self, metric_id)
 
+    def get_metrics(self):
+        cur = self.database_connection.cursor()
+        cur.execute(
+            "SELECT id FROM metric ORDER BY id ASC",
+            [],
+        )
+        return [Metric(self, m["id"]) for m in cur.fetchall()]
+
 
 class Metric:
     def __init__(self, store: Store, metric_id: str):
@@ -91,6 +99,9 @@ class Metric:
 
     def get_observation_list(self):
         return ObservationList(self)
+
+    def get_id(self) -> str:
+        return self.metric_row["id"]
 
     def add_observation(
         self,

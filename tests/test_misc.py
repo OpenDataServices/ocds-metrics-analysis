@@ -57,3 +57,12 @@ def test_metric_get_json_with_measure(store):
 def test_get_metric_that_does_not_exist(store):
     with pytest.raises(MetricNotFoundException):
         store.get_metric("HATS")
+
+
+def test_get_metrics(store):
+    store.add_metric("HATS", "Hats", "How many hats?")
+    store.add_metric("TIES", "Ties", "Why?")
+    metrics = store.get_metrics()
+    assert 2 == len(metrics)
+    assert "HATS" == metrics[0].get_id()
+    assert "TIES" == metrics[1].get_id()
