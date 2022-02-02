@@ -15,7 +15,18 @@ class Store:
             "CREATE TABLE metric(id TEXT, title TEXT, description TEXT, PRIMARY KEY(id))"
         )
         cur.execute(
-            "CREATE TABLE observation(metric_id TEXT, id TEXT, value_amount TEXT, value_currency TEXT, measure TEXT, PRIMARY KEY(metric_id, id))"
+            "CREATE TABLE observation("
+            + "metric_id TEXT, "
+            + "id TEXT, "
+            + "value_amount TEXT, "
+            + "value_currency TEXT, "
+            + "measure TEXT, "
+            + "unit_name TEXT, "
+            + "unit_scheme TEXT, "
+            + "unit_id TEXT, "
+            + "unit_uri TEXT, "
+            + "PRIMARY KEY(metric_id, id)"
+            + ")"
         )
         cur.execute(
             "CREATE TABLE dimension(metric_id TEXT, observation_id TEXT, key TEXT, value TEXT, PRIMARY KEY(metric_id, observation_id, key))"
@@ -48,13 +59,19 @@ class Store:
         )
         for observation in data["observations"]:
             cur.execute(
-                "INSERT INTO observation (metric_id, id, value_amount, value_currency, measure) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO observation "
+                + "(metric_id, id, value_amount, value_currency, measure, unit_name, unit_scheme, unit_id, unit_uri) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     data.get("id"),
                     observation.get("id"),
                     observation.get("value", {}).get("amount"),
                     observation.get("value", {}).get("currency"),
                     observation.get("measure"),
+                    observation.get("unit", {}).get("name"),
+                    observation.get("unit", {}).get("scheme"),
+                    observation.get("unit", {}).get("id"),
+                    observation.get("unit", {}).get("uri"),
                 ),
             )
             for dimension_key, dimension_value in observation.get(
@@ -110,12 +127,26 @@ class Metric:
         value_currency: Optional[str] = None,
         measure: Optional[str] = None,
         dimensions: dict = {},
+        unit_name: Optional[str] = None,
+        unit_scheme: Optional[str] = None,
+        unit_id: Optional[str] = None,
+        unit_uri: Optional[str] = None,
     ):
         # TODO check for id clash
         cur = self.store.database_connection.cursor()
         cur.execute(
-            "INSERT INTO observation (metric_id, id, value_amount, value_currency, measure) VALUES (?, ?, ?, ?, ?)",
-            (self.metric_id, id, value_amount, value_currency, measure),
+            "INSERT INTO observation (metric_id, id, value_amount, value_currency, measure, unit_name, unit_scheme, unit_id, unit_uri) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                self.metric_id,
+                id,
+                value_amount,
+                value_currency,
+                measure,
+                unit_name,
+                unit_scheme,
+                unit_id,
+                unit_uri,
+            ),
         )
         for dimension_key, dimension_value in dimensions.items():
             cur.execute(
@@ -135,6 +166,10 @@ class Metric:
         idx_to_aggregate: Union[str, int],
         answer_dimension_key: str,
         idx_to_dimensions: dict = {},
+        unit_name: Optional[str] = None,
+        unit_scheme: Optional[str] = None,
+        unit_id: Optional[str] = None,
+        unit_uri: Optional[str] = None,
     ):
 
         # ------------------------------- Get list of Observations
@@ -190,6 +225,10 @@ class Metric:
                 "%09d" % (id),
                 measure=observation["count"],
                 dimensions=observation["dimensions"],
+                unit_name=unit_name,
+                unit_scheme=unit_scheme,
+                unit_id=unit_id,
+                unit_uri=unit_uri,
             )
 
     def get_json(self):
@@ -213,6 +252,13 @@ class Metric:
                 }
             if observation.has_measure():
                 observation_data["measure"] = observation.get_measure()
+            if observation.has_unit():
+                observation_data["unit"] = {
+                    "name": observation.get_unit_name(),
+                    "scheme": observation.get_unit_scheme(),
+                    "id": observation.get_unit_id(),
+                    "uri": observation.get_unit_uri(),
+                }
             out["observations"].append(observation_data)
 
         return out
@@ -334,6 +380,26 @@ class Observation:
 
     def get_value_currency(self) -> str:
         return self.observation_row_data["value_currency"]
+
+    def has_unit(self) -> bool:
+        return (
+            self.observation_row_data["unit_name"]
+            or self.observation_row_data["unit_scheme"]
+            or self.observation_row_data["unit_id"]
+            or self.observation_row_data["unit_uri"]
+        )
+
+    def get_unit_name(self) -> str:
+        return self.observation_row_data["unit_name"]
+
+    def get_unit_scheme(self) -> str:
+        return self.observation_row_data["unit_scheme"]
+
+    def get_unit_id(self) -> str:
+        return self.observation_row_data["unit_id"]
+
+    def get_unit_uri(self) -> str:
+        return self.observation_row_data["unit_uri"]
 
     def has_measure(self) -> bool:
         return bool(self.observation_row_data["measure"])

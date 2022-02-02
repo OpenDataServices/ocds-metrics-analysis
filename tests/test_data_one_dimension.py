@@ -59,3 +59,20 @@ def test_metric_get_dimension_keys(store):
     assert 1 == len(keys)
 
     assert "answer" == keys[0]
+
+
+def test_units(store):
+    metric = store.get_metric("HATS")
+    observation_list = metric.get_observation_list()
+    observations = observation_list.get_data()
+
+    assert 3 == len(observations)
+
+    for i in range(0, 3):
+        assert observations[i].has_unit()
+        assert "People" == observations[i].get_unit_name()
+        assert "AnimateObjects" == observations[i].get_unit_scheme()
+        assert "HUMANS" == observations[i].get_unit_id()
+        assert (
+            "http://example.com/AnimateObjects/HUMANS" == observations[i].get_unit_uri()
+        )

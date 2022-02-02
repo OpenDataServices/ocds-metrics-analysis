@@ -54,6 +54,39 @@ def test_metric_get_json_with_measure(store):
     } == metric.get_json()
 
 
+def test_metric_get_json_with_units(store):
+    store.add_metric("HATS", "Hats", "How many hats?")
+    metric = store.get_metric("HATS")
+    metric.add_observation(
+        "H1",
+        measure="500",
+        dimensions={"colour": "red"},
+        unit_name="Hats",
+        unit_scheme="InanimateObjects",
+        unit_id="HATS",
+        unit_uri="http://example.com/InanimateObjects/HATS",
+    )
+
+    assert {
+        "description": "How many hats?",
+        "id": "HATS",
+        "observations": [
+            {
+                "dimensions": {"colour": "red"},
+                "id": "H1",
+                "measure": "500",
+                "unit": {
+                    "name": "Hats",
+                    "scheme": "InanimateObjects",
+                    "id": "HATS",
+                    "uri": "http://example.com/InanimateObjects/HATS",
+                },
+            }
+        ],
+        "title": "Hats",
+    } == metric.get_json()
+
+
 def test_get_metric_that_does_not_exist(store):
     with pytest.raises(MetricNotFoundException):
         store.get_metric("HATS")

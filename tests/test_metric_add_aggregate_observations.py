@@ -38,6 +38,38 @@ def test_no_dimensions(store):
     assert "yes" == observations[1].get_dimensions()["answer"]
 
 
+def test_units(store):
+    store.add_metric("HATS", "Hats", "How many hats?")
+    metric = store.get_metric("HATS")
+    metric.add_aggregate_observations(
+        [
+            {"like_answer": "yes"},
+            {"like_answer": "no"},
+            {"like_answer": "no"},
+            {"like_answer": "yes"},
+            {"like_answer": "yes"},
+        ],
+        "like_answer",
+        "answer",
+        unit_name="Cats",
+        unit_scheme="Animals",
+        unit_id="CATS",
+        unit_uri="http://example.com/animals/CATS",
+    )
+
+    observation_list = metric.get_observation_list()
+    observations = observation_list.get_data()
+
+    assert 2 == len(observations)
+
+    for i in range(0, 2):
+        assert observations[i].has_unit()
+        assert "Cats" == observations[i].get_unit_name()
+        assert "Animals" == observations[i].get_unit_scheme()
+        assert "CATS" == observations[i].get_unit_id()
+        assert "http://example.com/animals/CATS" == observations[i].get_unit_uri()
+
+
 def test_one_dimension(store):
     store.add_metric("HATS", "Hats", "How many hats?")
     metric = store.get_metric("HATS")
@@ -132,7 +164,6 @@ def test_two_dimensions(store):
         assert (
             expected_answer[1] == observation.get_dimensions()["answer"]
         ), "EXPECTED ANSWER = " + str(expected_answer)
-        print(observation.get_dimensions())
         assert expected_answer[2] == observation.get_dimensions().get(
             "height"
         ), "EXPECTED ANSWER = " + str(expected_answer)

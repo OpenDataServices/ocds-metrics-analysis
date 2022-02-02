@@ -7,21 +7,39 @@
             "dimensions": {
                 "answer": "Hate"
             },
-            "measure": 46
+            "measure": 46,
+            "unit": {
+                "name": "People",
+                "scheme": "AnimateObjects",
+                "id": "HUMANS",
+                "uri": "http://example.com/AnimateObjects/HUMANS"
+            }
         },
         {
             "id": 2,
             "dimensions": {
                 "answer": "Neither hate or like"
             },
-            "measure": 48
+            "measure": 48,
+            "unit": {
+                "name": "People",
+                "scheme": "AnimateObjects",
+                "id": "HUMANS",
+                "uri": "http://example.com/AnimateObjects/HUMANS"
+            }
         },
         {
             "id": 3,
             "dimensions": {
                 "answer": "Like"
             },
-            "measure": 15
+            "measure": 15,
+            "unit": {
+                "name": "People",
+                "scheme": "AnimateObjects",
+                "id": "HUMANS",
+                "uri": "http://example.com/AnimateObjects/HUMANS"
+            }
         }
     ]
 }

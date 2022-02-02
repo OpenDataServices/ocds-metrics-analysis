@@ -119,3 +119,14 @@ def test_metric_get_dimension_keys(store):
 
     assert "answer" == keys[0]
     assert "height" == keys[1]
+
+
+def test_units(store):
+    metric = store.get_metric("HATS")
+    observation_list = metric.get_observation_list()
+    observations = observation_list.get_data()
+
+    assert 6 == len(observations)
+
+    for i in range(0, 6):
+        assert not observations[i].has_unit()
