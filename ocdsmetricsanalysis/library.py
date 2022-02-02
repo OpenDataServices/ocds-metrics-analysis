@@ -223,9 +223,13 @@ class ObservationList:
         self.metric: Metric = metric
         self.store: Store = metric.store
         self.filter_by_dimensions: dict = {}
+        self._filter_by_dimensions_not_set: list = []
 
     def filter_by_dimension(self, dimension_key: str, dimension_value: str):
         self.filter_by_dimensions[dimension_key] = {"value": dimension_value}
+
+    def filter_by_dimension_not_set(self, dimension_key: str):
+        self._filter_by_dimensions_not_set.append(dimension_key)
 
     def get_data(self):
         cur = self.store.database_connection.cursor()
@@ -256,6 +260,17 @@ class ObservationList:
                 )
             )
             params[table_alias + "value"] = dimension_filter["value"]
+
+        for dimension_key in list(set(self._filter_by_dimensions_not_set)):
+            dimension_join_count += 1
+            table_alias = "dimension_filter_" + str(dimension_join_count)
+            joins.append(
+                " LEFT JOIN dimension AS {table_alias} ON {table_alias}.metric_id=o.metric_id AND {table_alias}.observation_id=o.id AND {table_alias}.key = :{table_alias}key".format(
+                    table_alias=table_alias
+                )
+            )
+            params[table_alias + "key"] = dimension_key
+            where.append(" {table_alias}.key IS NULL".format(table_alias=table_alias))
 
         sql: str = (
             "SELECT o.* FROM observation AS o "
