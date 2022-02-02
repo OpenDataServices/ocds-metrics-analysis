@@ -217,6 +217,14 @@ class Metric:
 
         return out
 
+    def get_dimension_keys(self):
+        cur = self.store.database_connection.cursor()
+        cur.execute(
+            "SELECT key FROM dimension WHERE metric_id=? GROUP BY key ORDER BY key ASC",
+            [self.metric_id],
+        )
+        return [d["key"] for d in cur.fetchall()]
+
 
 class ObservationList:
     def __init__(self, metric: Metric):

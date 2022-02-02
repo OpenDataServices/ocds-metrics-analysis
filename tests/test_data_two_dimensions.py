@@ -109,3 +109,13 @@ def test_observation_list_get_data_by_dimension(store):
     assert 2 == len(observations_by_dimension["Hate"])
     assert "15" == observations_by_dimension["Like"][0].get_value_amount()
     assert "31" == observations_by_dimension["Like"][1].get_value_amount()
+
+
+def test_metric_get_dimension_keys(store):
+    metric = store.get_metric("HATS")
+    keys = metric.get_dimension_keys()
+
+    assert 2 == len(keys)
+
+    assert "answer" == keys[0]
+    assert "height" == keys[1]

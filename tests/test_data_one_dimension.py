@@ -50,3 +50,12 @@ def test_observation_list_get_data_by_dimension(store):
 
     assert 1 == len(observations_by_dimension["Like"])
     assert "15" == observations_by_dimension["Like"][0].get_measure()
+
+
+def test_metric_get_dimension_keys(store):
+    metric = store.get_metric("HATS")
+    keys = metric.get_dimension_keys()
+
+    assert 1 == len(keys)
+
+    assert "answer" == keys[0]
