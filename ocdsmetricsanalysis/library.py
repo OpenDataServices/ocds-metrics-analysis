@@ -8,9 +8,9 @@ from ocdsmetricsanalysis.exceptions import MetricNotFoundException
 
 class Store:
     def __init__(self, database_filename):
-        self.database_connection = sqlite3.connect(database_filename)
-        self.database_connection.row_factory = sqlite3.Row
-        cur = self.database_connection.cursor()
+        self._database_connection = sqlite3.connect(database_filename)
+        self._database_connection.row_factory = sqlite3.Row
+        cur = self._database_connection.cursor()
         cur.execute(
             "CREATE TABLE metric(id TEXT, title TEXT, description TEXT, PRIMARY KEY(id))"
         )
@@ -31,11 +31,11 @@ class Store:
         cur.execute(
             "CREATE TABLE dimension(metric_id TEXT, observation_id TEXT, key TEXT, value TEXT, PRIMARY KEY(metric_id, observation_id, key))"
         )
-        self.database_connection.commit()
+        self._database_connection.commit()
 
     def add_metric(self, id: str, title: str, description: str):
         # TODO check for id clash
-        cur = self.database_connection.cursor()
+        cur = self._database_connection.cursor()
         cur.execute(
             "INSERT INTO metric (id, title, description) VALUES (?, ?, ?)",
             (
@@ -44,11 +44,11 @@ class Store:
                 description,
             ),
         )
-        self.database_connection.commit()
+        self._database_connection.commit()
 
     def add_metric_json(self, data: dict):
         # TODO check for id clash
-        cur = self.database_connection.cursor()
+        cur = self._database_connection.cursor()
         cur.execute(
             "INSERT INTO metric (id, title, description) VALUES (?, ?, ?)",
             (
@@ -86,13 +86,13 @@ class Store:
                         dimension_value,
                     ),
                 )
-        self.database_connection.commit()
+        self._database_connection.commit()
 
     def get_metric(self, metric_id):
         return Metric(self, metric_id)
 
     def get_metrics(self):
-        cur = self.database_connection.cursor()
+        cur = self._database_connection.cursor()
         cur.execute(
             "SELECT id FROM metric ORDER BY id ASC",
             [],
@@ -102,23 +102,23 @@ class Store:
 
 class Metric:
     def __init__(self, store: Store, metric_id: str):
-        self.store = store
-        self.metric_id = metric_id
+        self._store = store
+        self._metric_id = metric_id
 
-        cur = self.store.database_connection.cursor()
+        cur = self._store._database_connection.cursor()
         cur.execute(
             "SELECT metric.* FROM metric WHERE id=?",
             [metric_id],
         )
-        self.metric_row = cur.fetchone()
-        if self.metric_row is None:
+        self._metric_row = cur.fetchone()
+        if self._metric_row is None:
             raise MetricNotFoundException("No such metric found")
 
     def get_observation_list(self):
         return ObservationList(self)
 
     def get_id(self) -> str:
-        return self.metric_row["id"]
+        return self._metric_row["id"]
 
     def add_observation(
         self,
@@ -133,11 +133,11 @@ class Metric:
         unit_uri: Optional[str] = None,
     ):
         # TODO check for id clash
-        cur = self.store.database_connection.cursor()
+        cur = self._store._database_connection.cursor()
         cur.execute(
             "INSERT INTO observation (metric_id, id, value_amount, value_currency, measure, unit_name, unit_scheme, unit_id, unit_uri) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
-                self.metric_id,
+                self._metric_id,
                 id,
                 value_amount,
                 value_currency,
@@ -152,13 +152,13 @@ class Metric:
             cur.execute(
                 "INSERT INTO dimension (metric_id, observation_id, key, value) VALUES (?, ?, ?, ?)",
                 (
-                    self.metric_id,
+                    self._metric_id,
                     id,
                     dimension_key,
                     dimension_value,
                 ),
             )
-        self.store.database_connection.commit()
+        self._store._database_connection.commit()
 
     def add_aggregate_observations(
         self,
@@ -233,9 +233,9 @@ class Metric:
 
     def get_json(self):
         out = {
-            "id": self.metric_row["id"],
-            "title": self.metric_row["title"],
-            "description": self.metric_row["description"],
+            "id": self._metric_row["id"],
+            "title": self._metric_row["title"],
+            "description": self._metric_row["description"],
             "observations": [],
         }
 
@@ -264,31 +264,31 @@ class Metric:
         return out
 
     def get_dimension_keys(self):
-        cur = self.store.database_connection.cursor()
+        cur = self._store._database_connection.cursor()
         cur.execute(
             "SELECT key FROM dimension WHERE metric_id=? GROUP BY key ORDER BY key ASC",
-            [self.metric_id],
+            [self._metric_id],
         )
         return [d["key"] for d in cur.fetchall()]
 
 
 class ObservationList:
     def __init__(self, metric: Metric):
-        self.metric: Metric = metric
-        self.store: Store = metric.store
-        self.filter_by_dimensions: dict = {}
+        self._metric: Metric = metric
+        self._store: Store = metric._store
+        self._filter_by_dimensions: dict = {}
         self._filter_by_dimensions_not_set: list = []
 
     def filter_by_dimension(self, dimension_key: str, dimension_value: str):
-        self.filter_by_dimensions[dimension_key] = {"value": dimension_value}
+        self._filter_by_dimensions[dimension_key] = {"value": dimension_value}
 
     def filter_by_dimension_not_set(self, dimension_key: str):
         self._filter_by_dimensions_not_set.append(dimension_key)
 
     def get_data(self):
-        cur = self.store.database_connection.cursor()
+        cur = self._store._database_connection.cursor()
 
-        params: dict = {"metric_id": self.metric.metric_id}
+        params: dict = {"metric_id": self._metric._metric_id}
 
         where: list = ["o.metric_id = :metric_id"]
 
@@ -296,7 +296,7 @@ class ObservationList:
 
         dimension_join_count = 0
 
-        for dimension_key, dimension_filter in self.filter_by_dimensions.items():
+        for dimension_key, dimension_filter in self._filter_by_dimensions.items():
             dimension_join_count += 1
             table_alias = "dimension_filter_" + str(dimension_join_count)
             joins.append(
@@ -338,7 +338,7 @@ class ObservationList:
 
         out = []
         for result in cur.fetchall():
-            out.append(Observation(self.metric, result))
+            out.append(Observation(self._metric, result))
         return out
 
     def get_data_by_dimension(self, dimension_key: str):
@@ -352,16 +352,16 @@ class ObservationList:
 
 class Observation:
     def __init__(self, metric: Metric, observation_row_data):
-        self.metric: Metric = metric
-        self.store: Store = metric.store
-        self.observation_row_data = observation_row_data
+        self._metric: Metric = metric
+        self._store: Store = metric._store
+        self._observation_row_data = observation_row_data
 
     def get_dimensions(self):
-        cur = self.store.database_connection.cursor()
+        cur = self._store._database_connection.cursor()
 
         cur.execute(
             "SELECT dimension.key, dimension.value FROM dimension WHERE metric_id=? AND observation_id=?",
-            (self.metric.metric_id, self.observation_row_data["id"]),
+            (self._metric._metric_id, self._observation_row_data["id"]),
         )
 
         out = {}
@@ -371,41 +371,41 @@ class Observation:
 
     def has_value(self) -> bool:
         return (
-            self.observation_row_data["value_amount"]
-            or self.observation_row_data["value_currency"]
+            self._observation_row_data["value_amount"]
+            or self._observation_row_data["value_currency"]
         )
 
     def get_value_amount(self) -> str:
-        return self.observation_row_data["value_amount"]
+        return self._observation_row_data["value_amount"]
 
     def get_value_currency(self) -> str:
-        return self.observation_row_data["value_currency"]
+        return self._observation_row_data["value_currency"]
 
     def has_unit(self) -> bool:
         return (
-            self.observation_row_data["unit_name"]
-            or self.observation_row_data["unit_scheme"]
-            or self.observation_row_data["unit_id"]
-            or self.observation_row_data["unit_uri"]
+            self._observation_row_data["unit_name"]
+            or self._observation_row_data["unit_scheme"]
+            or self._observation_row_data["unit_id"]
+            or self._observation_row_data["unit_uri"]
         )
 
     def get_unit_name(self) -> str:
-        return self.observation_row_data["unit_name"]
+        return self._observation_row_data["unit_name"]
 
     def get_unit_scheme(self) -> str:
-        return self.observation_row_data["unit_scheme"]
+        return self._observation_row_data["unit_scheme"]
 
     def get_unit_id(self) -> str:
-        return self.observation_row_data["unit_id"]
+        return self._observation_row_data["unit_id"]
 
     def get_unit_uri(self) -> str:
-        return self.observation_row_data["unit_uri"]
+        return self._observation_row_data["unit_uri"]
 
     def has_measure(self) -> bool:
-        return bool(self.observation_row_data["measure"])
+        return bool(self._observation_row_data["measure"])
 
     def get_measure(self) -> str:
-        return self.observation_row_data["measure"]
+        return self._observation_row_data["measure"]
 
     def get_id(self) -> str:
-        return self.observation_row_data["id"]
+        return self._observation_row_data["id"]
