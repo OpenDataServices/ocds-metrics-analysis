@@ -170,6 +170,7 @@ class Metric:
         unit_scheme: Optional[str] = None,
         unit_id: Optional[str] = None,
         unit_uri: Optional[str] = None,
+        create_observations_from_dimensions_exponentially: bool = False,
     ):
 
         # ------------------------------- Get list of Observations
@@ -189,15 +190,31 @@ class Metric:
         ]
 
         # Second, for every extra dimension add more observations
-        for idx, dimension in idx_to_dimensions.items():
-            possible_answers = sorted(list(set([d[idx] for d in data_rows if d[idx]])))
+        if create_observations_from_dimensions_exponentially:
+            for idx, dimension in idx_to_dimensions.items():
+                possible_answers = sorted(
+                    list(set([d[idx] for d in data_rows if d[idx]]))
+                )
+                new_observations = []
+                for observation in observations:
+                    for a in possible_answers:
+                        new_observation = copy.deepcopy(observation)
+                        new_observation["dimensions"][dimension["dimension_name"]] = a
+                        new_observation["extra_dimension_definitions"][idx] = dimension
+                        new_observations.append(new_observation)
+                observations.extend(new_observations)
+        else:
             new_observations = []
-            for observation in observations:
-                for a in possible_answers:
-                    new_observation = copy.deepcopy(observation)
-                    new_observation["dimensions"][dimension["dimension_name"]] = a
-                    new_observation["extra_dimension_definitions"][idx] = dimension
-                    new_observations.append(new_observation)
+            for idx, dimension in idx_to_dimensions.items():
+                possible_answers = sorted(
+                    list(set([d[idx] for d in data_rows if d[idx]]))
+                )
+                for observation in observations:
+                    for a in possible_answers:
+                        new_observation = copy.deepcopy(observation)
+                        new_observation["dimensions"][dimension["dimension_name"]] = a
+                        new_observation["extra_dimension_definitions"][idx] = dimension
+                        new_observations.append(new_observation)
             observations.extend(new_observations)
 
         # ------------------------------- Process Data
