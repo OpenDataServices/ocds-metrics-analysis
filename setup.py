@@ -12,7 +12,7 @@ setup(
         "Source": "https://github.com/OpenDataServices/ocds-metrics-analysis",
     },
     description="",
-    license="TODO",
+    license="MIT",
     packages=find_packages(exclude=["tests", "tests.*"]),
     install_requires=[],
     extras_require={
