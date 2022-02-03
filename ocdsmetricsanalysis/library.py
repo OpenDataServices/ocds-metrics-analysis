@@ -256,7 +256,7 @@ class Metric:
                 unit_uri=unit_uri,
             )
 
-    def get_json(self):
+    def get_json(self) -> dict:
         """Get JSON for this Metric, including all observations for it."""
         out = {
             "id": self._metric_row["id"],
@@ -289,7 +289,7 @@ class Metric:
 
         return out
 
-    def get_dimension_keys(self):
+    def get_dimension_keys(self) -> list:
         """Returns a list of all unique dimension keys used in all observations for this metric."""
         cur = self._store._database_connection.cursor()
         cur.execute(
@@ -400,6 +400,7 @@ class Observation:
         return out
 
     def has_value(self) -> bool:
+        """Does this observation have the value object (amount and currency keys)"""
         return (
             self._observation_row_data["value_amount"]
             or self._observation_row_data["value_currency"]
@@ -412,6 +413,7 @@ class Observation:
         return self._observation_row_data["value_currency"]
 
     def has_unit(self) -> bool:
+        """Does this observation have the unit object (name, scheme, id and uri keys)"""
         return (
             self._observation_row_data["unit_name"]
             or self._observation_row_data["unit_scheme"]
@@ -432,6 +434,7 @@ class Observation:
         return self._observation_row_data["unit_uri"]
 
     def has_measure(self) -> bool:
+        """Does this observation have a measure?"""
         return bool(self._observation_row_data["measure"])
 
     def get_measure(self) -> str:

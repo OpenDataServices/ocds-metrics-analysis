@@ -16,3 +16,5 @@ It can be used in a `Jupyter <https://jupyter.org/>`_ or `Google Colab <https://
    metric.rst
    observation_list.rst
    observation.rst
+   examples/index.rst
+
