@@ -12,3 +12,7 @@ It can be used in a `Jupyter <https://jupyter.org/>`_ or `Google Colab <https://
    :maxdepth: 3
 
    install.rst
+   store.rst
+   metric.rst
+   observation_list.rst
+   observation.rst

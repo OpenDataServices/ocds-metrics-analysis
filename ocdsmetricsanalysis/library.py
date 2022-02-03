@@ -34,6 +34,7 @@ class Store:
         self._database_connection.commit()
 
     def add_metric(self, id: str, title: str, description: str):
+        """Adds a metric to the store."""
         # TODO check for id clash
         cur = self._database_connection.cursor()
         cur.execute(
@@ -47,6 +48,7 @@ class Store:
         self._database_connection.commit()
 
     def add_metric_json(self, data: dict):
+        """Adds a JSON object which is a Metric class to the store. Adds the metric and any observations it contains in the JSON."""
         # TODO check for id clash
         cur = self._database_connection.cursor()
         cur.execute(
@@ -89,9 +91,11 @@ class Store:
         self._database_connection.commit()
 
     def get_metric(self, metric_id):
+        """Returns a specific Metric. Returns a Metric class."""
         return Metric(self, metric_id)
 
     def get_metrics(self):
+        """Returns a list of all metrics in this store. Each item in the list is a Metric class."""
         cur = self._database_connection.cursor()
         cur.execute(
             "SELECT id FROM metric ORDER BY id ASC",
@@ -115,9 +119,11 @@ class Metric:
             raise MetricNotFoundException("No such metric found")
 
     def get_observation_list(self):
+        """Returns a new ObservationList object that you can use for filtered querying for observations."""
         return ObservationList(self)
 
     def get_id(self) -> str:
+        """Returns id of this Metric"""
         return self._metric_row["id"]
 
     def add_observation(
@@ -132,6 +138,7 @@ class Metric:
         unit_id: Optional[str] = None,
         unit_uri: Optional[str] = None,
     ):
+        """Adds a new single observation to this metric and saves it in the store."""
         # TODO check for id clash
         cur = self._store._database_connection.cursor()
         cur.execute(
@@ -172,6 +179,7 @@ class Metric:
         unit_uri: Optional[str] = None,
         create_observations_from_dimensions_exponentially: bool = False,
     ):
+        """Takes rows of data and sums up how often certain answers appear then saves new observations in the store."""
 
         # ------------------------------- Get list of Observations
         # First, just the observations for possible answers
@@ -249,6 +257,7 @@ class Metric:
             )
 
     def get_json(self):
+        """Get JSON for this Metric, including all observations for it."""
         out = {
             "id": self._metric_row["id"],
             "title": self._metric_row["title"],
@@ -281,6 +290,7 @@ class Metric:
         return out
 
     def get_dimension_keys(self):
+        """Returns a list of all unique dimension keys used in all observations for this metric."""
         cur = self._store._database_connection.cursor()
         cur.execute(
             "SELECT key FROM dimension WHERE metric_id=? GROUP BY key ORDER BY key ASC",
@@ -297,12 +307,15 @@ class ObservationList:
         self._filter_by_dimensions_not_set: list = []
 
     def filter_by_dimension(self, dimension_key: str, dimension_value: str):
+        """Filter by dimension - this key must match this value exactly."""
         self._filter_by_dimensions[dimension_key] = {"value": dimension_value}
 
     def filter_by_dimension_not_set(self, dimension_key: str):
+        """Filter by dimension - this key must not exist on the observation."""
         self._filter_by_dimensions_not_set.append(dimension_key)
 
     def get_data(self):
+        """Returns a list of Observations matching the filters set on this object."""
         cur = self._store._database_connection.cursor()
 
         params: dict = {"metric_id": self._metric._metric_id}
@@ -373,7 +386,7 @@ class Observation:
         self._store: Store = metric._store
         self._observation_row_data = observation_row_data
 
-    def get_dimensions(self):
+    def get_dimensions(self) -> dict:
         cur = self._store._database_connection.cursor()
 
         cur.execute(
