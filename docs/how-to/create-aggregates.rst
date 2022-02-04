@@ -1,5 +1,5 @@
-Example - create aggregate data
-===============================
+How to create aggregate data
+============================
 
 We want to run a survey about how many people like hats.
 
@@ -10,7 +10,7 @@ First we'll import the library and make a new store.
 .. code-block:: python
 
     from ocdsmetricsanalysis.library import Store
-    store = Store("example-create-aggregates.sqlite")
+    store = Store("how-to-create-aggregates.sqlite")
 
 We'll add our own metric.
 

@@ -1,5 +1,5 @@
-Example - create data
-=====================
+How to create and export data
+=============================
 
 Open a python shell in interactive mode (run `python3`) and run the following commands in sequence.
 
@@ -9,7 +9,7 @@ First we'll import the library and make a new store.
 .. code-block:: python
 
     from ocdsmetricsanalysis.library import Store
-    store = Store("example-create.sqlite")
+    store = Store("how-to-create-export.sqlite")
 
 Currently the store is empty, as you can see by getting a list of current metrics.
 
@@ -32,6 +32,10 @@ Now we have our metric, but we need to add some observations to it.
    metric.add_observation("obs1", measure=34, dimensions={'answer':'like'})
    metric.add_observation("obs2", measure=15, dimensions={'answer':'neither like or dislike'})
    metric.add_observation("obs3", measure=12, dimensions={'answer':'dislike'})
+
+The first parameter is the id of the observation. This must be unique in the metric.
+
+You can also :doc:`pass other information such as financial data or unit information - see the reference for details <../python-api/metric>`.
 
 Now our store contains some data - we can export this as JSON.
 

@@ -1,5 +1,5 @@
-Example - read data
-===================
+How to import data
+==================
 
 
 Start by getting a data file:
@@ -16,7 +16,7 @@ First we'll import the library and make a new store.
 .. code-block:: python
 
     from ocdsmetricsanalysis.library import Store
-    store = Store("example-read.sqlite")
+    store = Store("how-to-import.sqlite")
 
 Currently the store is empty, as you can see by getting a list of current metrics.
 

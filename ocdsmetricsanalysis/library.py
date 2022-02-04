@@ -7,7 +7,17 @@ from ocdsmetricsanalysis.exceptions import MetricNotFoundException
 
 
 class Store:
-    def __init__(self, database_filename):
+    """
+    Every time you want to work with a set of data, you need to create a store.
+    A store has methods for adding and querying metrics and observations.
+
+    Stores do not persist data automatically; if you want to keep the data there are methods to export it as JSON
+    that should be used before discarding the store.
+
+    Construct: Pass database_filename. This should be a file that does not already exist.
+    It is not needed after the store is finished with and can be deleted."""
+
+    def __init__(self, database_filename: str):
         self._database_connection = sqlite3.connect(database_filename)
         self._database_connection.row_factory = sqlite3.Row
         cur = self._database_connection.cursor()
@@ -105,6 +115,11 @@ class Store:
 
 
 class Metric:
+    """A class representing one metric from a store.
+
+    Do not construct directly; instead call other methods on a Store to get a metric.
+    """
+
     def __init__(self, store: Store, metric_id: str):
         self._store = store
         self._metric_id = metric_id
@@ -300,6 +315,12 @@ class Metric:
 
 
 class ObservationList:
+    """A class to get list of observations from a metric.
+    It has methods to set query filters, and then methods to get the data.
+
+    Do not construct directly; instead call `get_observation_list` on a Metric to get an observation list.
+    """
+
     def __init__(self, metric: Metric):
         self._metric: Metric = metric
         self._store: Store = metric._store
@@ -314,8 +335,10 @@ class ObservationList:
         """Filter by dimension - this key must not exist on the observation."""
         self._filter_by_dimensions_not_set.append(dimension_key)
 
-    def get_data(self):
-        """Returns a list of Observations matching the filters set on this object."""
+    def get_data(self) -> list:
+        """Returns a list of Observations.
+
+        Observations will match the filters set on this observation list. (Just don't set any filters to get all observations.)"""
         cur = self._store._database_connection.cursor()
 
         params: dict = {"metric_id": self._metric._metric_id}
@@ -366,13 +389,18 @@ class ObservationList:
 
         cur.execute(sql, params)
 
-        out = []
+        out: list = []
         for result in cur.fetchall():
             out.append(Observation(self._metric, result))
         return out
 
-    def get_data_by_dimension(self, dimension_key: str):
-        out = defaultdict(list)
+    def get_data_by_dimension(self, dimension_key: str) -> dict:
+        """Returns Observations grouped by the value of a dimension key.
+
+        Observations will match the filters set on this observation list. (Just don't set any filters to get all observations.)
+
+        Returns a dict. The key is the value of the dimension, and the value is a list of all observations with that dimension value."""
+        out: dict = defaultdict(list)
         for observation in self.get_data():
             dimensions: dict = observation.get_dimensions()
             if dimensions.get(dimension_key):
@@ -381,6 +409,12 @@ class ObservationList:
 
 
 class Observation:
+    """A class representing one observation from a store.
+    It has methods to get information.
+
+    Do not construct directly; instead use an ObservationList to get Observations.
+    """
+
     def __init__(self, metric: Metric, observation_row_data):
         self._metric: Metric = metric
         self._store: Store = metric._store

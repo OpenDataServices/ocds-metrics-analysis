@@ -1,5 +1,5 @@
-Example - query data
-====================
+How to query data
+=================
 
 Setup
 -----
@@ -11,7 +11,7 @@ First we'll import the library, make a new store and add some sample data to que
 .. code-block:: python
 
     from ocdsmetricsanalysis.library import Store
-    store = Store("example-query.sqlite")
+    store = Store("how-to-query.sqlite")
     store.add_metric("HATS", "How many people like hats?", "We ran a survey to find out.")
     metric = store.get_metric("HATS")
     metric.add_observation("obs1", measure=34, dimensions={'answer':'like'})
@@ -171,7 +171,7 @@ Now get all data and print it, as before.
    12
    {'answer': 'dislike'}
 
-This is however a touch inconvenient; you have to know what all the other dimensions are and specifically exclude them. Fortunately there is an easier way to  do this - let's get a new Observation List object and try again.
+This is however inconvenient; you have to know what all the other dimensions are and specifically exclude them. Fortunately there is an easier way to  do this - let's get a new Observation List object and try again.
 
 
 .. code-block:: python
