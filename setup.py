@@ -14,6 +14,7 @@ setup(
     description="",
     license="MIT",
     packages=find_packages(exclude=["tests", "tests.*"]),
+    python_requires=">=3.7",
     install_requires=[],
     extras_require={
         "dev": ["pytest", "black", "isort", "flake8", "mypy"],
