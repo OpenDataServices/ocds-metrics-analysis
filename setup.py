@@ -17,7 +17,15 @@ setup(
     python_requires=">=3.7",
     install_requires=[],
     extras_require={
-        "dev": ["pytest", "black", "isort", "flake8", "mypy"],
+        "dev": [
+            "pytest",
+            "black==22.12.0",
+            "isort",
+            "flake8",
+            "mypy",
+            "sphinx",
+            "sphinx_rtd_theme",
+        ],
     },
     classifiers=[],
 )
