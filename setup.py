@@ -14,7 +14,7 @@ setup(
     description="",
     license="MIT",
     packages=find_packages(exclude=["tests", "tests.*"]),
-    python_requires=">=3.7",
+    python_requires=">=3.9",
     install_requires=[],
     extras_require={
         "dev": [
