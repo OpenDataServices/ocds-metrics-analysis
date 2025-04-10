@@ -14,7 +14,7 @@ setup(
     description="",
     license="MIT",
     packages=find_packages(exclude=["tests", "tests.*"]),
-    python_requires=">=3.7",
+    python_requires=">=3.9",
     install_requires=[],
     extras_require={
         "dev": [
@@ -24,7 +24,7 @@ setup(
             "flake8",
             "mypy",
             "sphinx",
-            "sphinx_rtd_theme",
+            "odsc-default-sphinx-theme",
         ],
     },
     classifiers=[],
